@@ -11,6 +11,7 @@ from robojudo.pipeline.pipeline_cfgs import (
 )
 
 from .ctrl.g1_beyondmimic_ctrl_cfg import G1BeyondmimicCtrlCfg  # noqa: F401
+from .ctrl.g1_promptmimic_ctrl_cfg import G1PromptMimicCtrlCfg  # noqa: F401
 from .ctrl.g1_motion_ctrl_cfg import (  # noqa: F401
     G1MotionCtrlCfg,
     G1MotionH2HCtrlCfg,
@@ -25,6 +26,9 @@ from .pipeline.g1_locomimic_pipeline_cfg import G1RlLocoMimicPipelineCfg  # noqa
 from .policy.g1_amo_policy_cfg import G1AmoPolicyCfg  # noqa: F401
 from .policy.g1_asap_policy_cfg import G1AsapLocoPolicyCfg, G1AsapPolicyCfg  # noqa: F401
 from .policy.g1_beyondmimic_policy_cfg import G1BeyondMimicPolicyCfg  # noqa: F401
+from .policy.g1_locomode_policy_cfg import G1LocoModePolicyCfg  # noqa: F401
+from .policy.g1_promptmimic_policy_cfg import G1PromptMimicPolicyCfg  # noqa: F401
+from .policy.g1_motion_tracking_policy_cfg import G1MotionTrackingPolicyCfg  # noqa: F401
 from .policy.g1_h2h_policy_cfg import G1H2HPolicyCfg  # noqa: F401
 from .policy.g1_kungfubot_policy_cfg import G1KungfuBotGeneralPolicyCfg, G1KungfuBotPolicyCfg  # noqa: F401
 from .policy.g1_smooth_policy_cfg import G1SmoothPolicyCfg  # noqa: F401
@@ -53,16 +57,16 @@ class g1_locomimic_beyondmimic(G1RlLocoMimicPipelineCfg):
                 "'": "[POLICY_SWITCH],LAST",
             }
         ),
-        # JoystickCtrlCfg(
-        #     combination_init_buttons=[],
-        #     triggers={
-        #         "A": "[SHUTDOWN]",
-        #         "Back": "[POLICY_LOCO]",
-        #         "Start": "[POLICY_MIMIC]",
-        #         "RB": "[POLICY_SWITCH],NEXT",
-        #         "LB": "[POLICY_SWITCH],LAST",
-        #     },
-        # ),
+        JoystickCtrlCfg(
+            combination_init_buttons=[],
+            triggers={
+                "×": "[SHUTDOWN]",
+                "Share": "[POLICY_LOCO]",
+                "Options": "[POLICY_MIMIC]",
+                "R1": "[POLICY_SWITCH],NEXT",
+                "L1": "[POLICY_SWITCH],LAST",
+            },
+        ),
     ]
 
     loco_policy: G1AmoPolicyCfg = G1AmoPolicyCfg()
@@ -75,6 +79,87 @@ class g1_locomimic_beyondmimic(G1RlLocoMimicPipelineCfg):
         G1BeyondMimicPolicyCfg(policy_name="Dance_wose", without_state_estimator=True),
         G1BeyondMimicPolicyCfg(policy_name="Violin", without_state_estimator=False, max_timestep=500),
         G1BeyondMimicPolicyCfg(policy_name="Waltz", without_state_estimator=False, max_timestep=850),
+    ]
+
+
+@cfg_registry.register
+class g1_locomode_beyondmimic(G1RlLocoMimicPipelineCfg):
+    """
+    LocoMode (RoboMimic) + BeyondMimic, Sim2Sim.
+    """
+
+    robot: str = "g1"
+    env: G1MujocoEnvCfg = G1MujocoEnvCfg()
+    ctrl: list[KeyboardCtrlCfg | JoystickCtrlCfg] = [
+        KeyboardCtrlCfg(
+            triggers={
+                "i": "[SIM_REBORN]",
+                "o": "[SHUTDOWN]",
+                "]": "[POLICY_LOCO]",
+                "[": "[POLICY_MIMIC]",
+                ";": "[POLICY_SWITCH],NEXT",
+                "'": "[POLICY_SWITCH],LAST",
+            }
+        ),
+        JoystickCtrlCfg(
+            combination_init_buttons=[],
+            triggers={
+                "×": "[SHUTDOWN]",
+                "Share": "[POLICY_LOCO]",
+                "Options": "[POLICY_MIMIC]",
+                "R1": "[POLICY_SWITCH],NEXT",
+                "L1": "[POLICY_SWITCH],LAST",
+            },
+        ),
+    ]
+
+    # Start with AMO, then auto-switch to LocoMode after warmup.
+    loco_policy: G1AmoPolicyCfg = G1AmoPolicyCfg()
+
+    mimic_policies: list[G1LocoModePolicyCfg | G1BeyondMimicPolicyCfg | G1MotionTrackingPolicyCfg] = [
+        G1LocoModePolicyCfg(),
+        G1BeyondMimicPolicyCfg(policy_name="Dance_wose", without_state_estimator=True),
+        G1BeyondMimicPolicyCfg(policy_name="Violin", without_state_estimator=False, max_timestep=500),
+        G1BeyondMimicPolicyCfg(policy_name="Waltz", without_state_estimator=False, max_timestep=850),
+        G1MotionTrackingPolicyCfg(policy_name="demo2", motion_name="robot_demo2"),
+        G1MotionTrackingPolicyCfg(policy_name="demo4", motion_name="robot_demo4"),
+    ]
+
+    # 2 seconds warmup at 50Hz, then switch to mimic index 0 (LocoMode).
+    warmup_steps: int = 100
+    warmup_to_mimic: bool = True
+    warmup_mimic_idx: int = 0
+
+
+@cfg_registry.register
+class g1_locomimic_promptmimic(G1RlLocoMimicPipelineCfg):
+    """
+    Loco + PromptMimic:
+    - Single ONNX (latest.onnx)
+    - Motion commands from PromptMimicCtrl with switchable npz motions
+    - Keyboard only: [ ] ; '
+    """
+
+    robot: str = "g1"
+    env: G1MujocoEnvCfg = G1MujocoEnvCfg()
+    ctrl: list[KeyboardCtrlCfg | JoystickCtrlCfg] = [
+        KeyboardCtrlCfg(
+            triggers={
+                "i": "[SIM_REBORN]",
+                "o": "[SHUTDOWN]",
+                "]": "[POLICY_LOCO]",
+                "[": "[POLICY_MIMIC]",
+                ";": "[POLICY_SWITCH],NEXT",
+                "'": "[POLICY_SWITCH],LAST",
+            }
+        ),
+        G1PromptMimicCtrlCfg(),
+    ]
+
+    loco_policy: G1AmoPolicyCfg = G1AmoPolicyCfg()
+
+    mimic_policies: list[G1PromptMimicPolicyCfg] = [
+        G1PromptMimicPolicyCfg(),
     ]
 
 
@@ -138,6 +223,34 @@ class g1_locomimic_asap(G1RlLocoMimicPipelineCfg):
 class g1_locomimic_beyondmimic_real(g1_locomimic_beyondmimic):
     """
     Locomotion + Beyondmimic, Sim2Real.
+    Warning: Make sure the policy is stable for real robot before using it.
+    """
+
+    env: G1RealEnvCfg = G1RealEnvCfg(
+        unitree=G1UnitreeCfg(
+            net_if="eth0",  # note: change to your network interface
+        ),
+    )
+    ctrl: list[UnitreeCtrlCfg] = [
+        UnitreeCtrlCfg(
+            combination_init_buttons=[],
+            triggers={
+                "A": "[SHUTDOWN]",
+                "Select": "[POLICY_LOCO]",
+                "Start": "[POLICY_MIMIC]",
+                "R1": "[POLICY_SWITCH],NEXT",
+                "L1": "[POLICY_SWITCH],LAST",
+            },
+        ),
+    ]
+
+    do_safety_check: bool = True  # enable safety check for real robot
+
+
+@cfg_registry.register
+class g1_locomode_beyondmimic_real(g1_locomode_beyondmimic):
+    """
+    LocoMode (RoboMimic) + BeyondMimic, Sim2Real.
     Warning: Make sure the policy is stable for real robot before using it.
     """
 

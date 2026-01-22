@@ -69,6 +69,7 @@ class g1_real(g1):
         env_type="UnitreeCppEnv",  # For unitree_cpp, check README for more details
         unitree=G1UnitreeCfg(
             net_if="eth0",  # note: change to your network interface
+            #网线部署时 net_if 改成工作站连接 G1 的网卡名即可（用 ip a 看那个接口叫啥）
         ),
     )
 
@@ -96,8 +97,9 @@ class g1_switch(RlMultiPolicyPipelineCfg):
         # ),
         JoystickCtrlCfg(
             triggers_extra={
-                "RB+Down": "[POLICY_SWITCH],0",
-                "RB+Up": "[POLICY_SWITCH],1",
+                # PS5 semantics (DualSense): hold R1 and tap Dpad Up/Down
+                "R1+Down": "[POLICY_SWITCH],0",
+                "R1+Up": "[POLICY_SWITCH],1",
             }
         ),
     ]
@@ -128,8 +130,9 @@ class g1_locomimic(RlLocoMimicPipelineCfg):
         ),
         JoystickCtrlCfg(
             triggers_extra={
-                "RB+Down": "[POLICY_LOCO]",
-                "RB+Up": "[POLICY_MIMIC]",
+                # PS5 semantics (DualSense): hold R1 and tap Dpad Up/Down
+                "R1+Down": "[POLICY_LOCO]",
+                "R1+Up": "[POLICY_MIMIC]",
             }
         ),
     ]
@@ -319,10 +322,11 @@ class g1_switch_beyondmimic(RlMultiPolicyPipelineCfg):
         ),
         JoystickCtrlCfg(
             triggers_extra={
-                "RB+Down": "[POLICY_SWITCH],0",
-                "RB+Left": "[POLICY_SWITCH],1",
-                "RB+Up": "[POLICY_SWITCH],2",
-                "RB+Right": "[POLICY_SWITCH],3",
+                # PS5 semantics (DualSense): hold R1 and tap Dpad directions
+                "R1+Down": "[POLICY_SWITCH],0",
+                "R1+Left": "[POLICY_SWITCH],1",
+                "R1+Up": "[POLICY_SWITCH],2",
+                "R1+Right": "[POLICY_SWITCH],3",
             }
         ),
     ]

@@ -204,6 +204,10 @@ class RlLocoMimicPipeline(RlMultiPolicyPipeline):
         self.dt = 1.0 / self.freq
 
         self.policy_locomotion_mimic_flag = 0  # 0: locomotion, 1: mimic
+        self._auto_switch_done = False
+        self._warmup_steps = max(self.cfg.warmup_steps, 0)
+        self._warmup_to_mimic = self.cfg.warmup_to_mimic
+        self._warmup_mimic_idx = max(self.cfg.warmup_mimic_idx, 0)
 
         self.self_check()
         self.reset()
@@ -232,6 +236,19 @@ class RlLocoMimicPipeline(RlMultiPolicyPipeline):
                         self.env.reborn()  # pyright: ignore[reportAttributeAccessIssue]
                 case cmd if cmd.startswith("[POLICY_SWITCH]"):
                     switch_target = cmd.split(",")[1]
+                    # If currently in Loco, try to switch motion inside PromptMimicCtrl (if present).
+                    if self.policy_manager.current_policy_id == self.policy_manager.policy_loco_id:
+                        ctrl_box = self.ctrl_manager.controllers
+                        prompt_ctrl = ctrl_box.get("PromptMimicCtrl", None)
+                        if prompt_ctrl is not None:
+                            inst = prompt_ctrl["inst"]
+                            if switch_target == "NEXT":
+                                inst.toggle_next_motion()
+                            elif switch_target == "LAST":
+                                inst.toggle_prev_motion()
+                            continue  # skip mimic-policy switch
+
+                    # Fallback to mimic policy switch (for other configs).
                     if switch_target == "NEXT":
                         self.policy_manager.toggle_mimic_policy(1)
                     elif switch_target == "LAST":
@@ -242,6 +259,22 @@ class RlLocoMimicPipeline(RlMultiPolicyPipeline):
                 case "[POLICY_MIMIC]":
                     self.policy_locomotion_mimic_flag = 1
                     self.policy_manager.switch_to_mimic()
+
+        # Auto switch after warmup (e.g., AMO -> LocoMode)
+        if (
+            not self._auto_switch_done
+            and self._warmup_to_mimic
+            and self._warmup_steps > 0
+            and self.timestep >= self._warmup_steps
+            and self.policy_manager.current_policy_id == self.policy_manager.policy_loco_id
+        ):
+            self._auto_switch_done = True
+            self.policy_manager.policy_mimic_idx = self._warmup_mimic_idx % self.policy_manager.policy_mimic_num
+            self.policy_locomotion_mimic_flag = 1
+            logger.info(
+                f"Warmup done ({self._warmup_steps} steps). Auto switch to mimic idx={self.policy_manager.policy_mimic_idx}."
+            )
+            self.policy_manager.switch_to_mimic()
 
         self.ctrl_manager.post_step_callback(ctrl_data)
 

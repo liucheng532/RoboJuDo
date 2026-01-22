@@ -29,18 +29,27 @@ class KeyboardCtrlCfg(CtrlCfg):
 class JoystickCtrlCfg(CtrlCfg):
     ctrl_type: str = "JoystickCtrl"
 
-    combination_init_buttons: list[str] = ["LB", "RB"]
+    # Support both Xbox-style shoulder names (LB/RB) and PS-style (L1/R1).
+    # This is only used for "combo triggers" (e.g. holding L1 then pressing Down).
+    combination_init_buttons: list[str] = ["LB", "RB", "L1", "R1"]
     """first button in combination, need to be held down to trigger other commands;"""
 
     # reference for button names in JoystickThread config
     triggers: dict[str, str] = {
+        # PS5 (DualSense) physical semantics (preferred)
+        "×": "[SHUTDOWN]",
+        "□": "[MOTION_FADE_IN]",
+        "○": "[MOTION_FADE_OUT]",
+        "△": "[MOTION_RESET]",
+
+        # Backward compatible aliases (Xbox-style abstraction)
         "A": "[SHUTDOWN]",
         "X": "[MOTION_FADE_IN]",
         "B": "[MOTION_FADE_OUT]",
         "Y": "[MOTION_RESET]",
         # "LB": "[MOTION_LOAD_PREV]",
         # "RB": "[MOTION_LOAD_NEXT]",
-        # Note: combo keys supported: "LB+RB+A": "[TEST]",
+        # Note: combo keys supported (example): "L1+R1+×": "[TEST]" (aliases like "LB+RB+A" also work).
     }
 
 
@@ -150,6 +159,25 @@ class BeyondMimicCtrlCfg(CtrlCfg):
         """from beyondmimic asset, used for indexing"""
 
     motion_cfg: MotionCommandCfg
+
+
+class PromptMimicCtrlCfg(BeyondMimicCtrlCfg):
+    """
+    Motion playback controller for PromptMimic:
+    - Supports multiple motion names and toggling among them.
+    - Shares the same MotionCommandCfg/body indexing semantics as BeyondMimicCtrl.
+    """
+
+    ctrl_type: str = "PromptMimicCtrl"
+
+    # Keep a placeholder to satisfy base class; not used for loading (we use motion_names list).
+    motion_name: str = ""
+    motion_names: list[str] = []
+    motion_idx: int = 0
+
+    def motion_path(self, motion_name: str) -> str:
+        motion_path = ASSETS_DIR / f"motions/{self.robot}/promptmimic/{motion_name}.npz"
+        return motion_path.as_posix()
 
 
 class TwistRedisCtrlCfg(CtrlCfg):

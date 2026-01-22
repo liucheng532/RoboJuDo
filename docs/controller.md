@@ -21,7 +21,7 @@ We provide the following controllers:
 script:
   - [joystick_ctrl.py](../robojudo/controller/joystick_ctrl.py)
 
-Example data of Xbox Joystick with Linear Triggers:
+Example data of Joystick (Xbox / PS5 DualSense):
 
 `ctrl_data`:`dict`, the control data.
   - `axes`: `dict[str, float]`:
@@ -29,11 +29,10 @@ Example data of Xbox Joystick with Linear Triggers:
     - `LeftY`: left axes y value. Range: [-1, 1]
     - `RightX`: Right axes x value. Range: [-1, 1]
     - `RightY`: Right axes y value. Range: [-1, 1]
-    - `LT`: left trigger value. Range: [0, 1]
-    - `RT`: right trigger value. Range: [0, 1]
+    - `LT`/`RT` (Xbox-like) or `L2`/`R2` (DualSense): trigger value. Range: [0, 1]
   - `button_event`: `list[dict]`:
     `dict`:
-      - `name`: the name of the button. like `A`, `B`, `X`, `Y`...
+      - `name`: the name of the button. Xbox-like (e.g. `A`, `B`, `X`, `Y`, `LB`, `RB`) or DualSense semantics (e.g. `×`, `○`, `□`, `△`, `L1`, `R1`)
       - `press`: whether the button is pressed. `bool`. `True` for `press`, `False` for `release`
       - `timestamp`: the time when the button event occurs. `float`
       - `type`: the type of the button event.
@@ -49,12 +48,14 @@ You can set Hotkeys in JoystickCtrlCfg:
 ```python
 JoystickCtrlCfg(
     triggers_extra={
-        "RB+Down": "[POLICY_SWITCH],0",
-        "LB+RB+A": "COMBO_TEST",
+        "R1+Down": "[POLICY_SWITCH],0",
+        "L1+R1+×": "COMBO_TEST",
     }
 ),
 ```
-when you press the `RB+Down` button, the command will be `["[POLICY_SWITCH],0"]`.
+when you press the `R1+Down` hotkey, the command will be `["[POLICY_SWITCH],0"]`.
+
+Note: the trigger system supports common aliases (e.g. `R1` ↔ `RB`, `×` ↔ `A`) to keep configs readable while still working across controllers.
 
 💡We have joystick mapping config for different platforms and Joystick types. 
 

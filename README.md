@@ -206,14 +206,14 @@ In the following, we use the deployment on G1 as an example.
 
 Begin your journey with unitree g1 sim2sim.
 
-> A Xbox controller is needed for control.
+> A controller is needed for control (Xbox or PS5 DualSense are supported).
 
 ```bash
 # run the default g1 sim2sim cfg
 python scripts/run_pipeline.py
 ```
 
-You can control the motivation using any Xbox controller:
+You can control the motion using a controller:
 
 - `left axes` move forward/backward/lfet/right
 - `right axes` turn left/right
@@ -301,15 +301,32 @@ check documentation [BeyondmimicPolicy](./docs/policy.md/#policy--beyondmimicpol
 python scripts/run_pipeline.py -c g1_switch
 ```
 
-Xbox Controller:
+Controller:
 
 - `left axes` move forward/backward/left/right
 <!-- - `right axes(for/back)` stand higher/squat -->
 - `right axes(left/right)` turn left/right
 
 Switch between Unitree Policy and AMO Policy:
-- `RB + Dpad[Down]` switch to Unitree Policy
-- `RB + Dpad[Up]` switch to AMO Policy
+- `R1 + Dpad[Down]` switch to Unitree Policy
+- `R1 + Dpad[Up]` switch to AMO Policy
+
+### PromptMimic (single ONNX + switchable motions)
+Use the prompt-mimic loco/mimic pipeline (keyboard only):
+
+```bash
+python scripts/run_pipeline.py -c g1_locomimic_promptmimic
+```
+
+Keyboard triggers:
+- `]` switch to LocoMotion
+- `[` switch to PromptMimic
+- `;` select next prompt motion (while in Loco)
+- `'` select prev prompt motion (while in Loco)
+
+Resources:
+- Model: `assets/models/g1/promptmimic/latest.onnx`
+- Motions: `assets/motions/g1/promptmimic/robot_demo*.npz`
 
 ### Loco-Mimic Policy Switch with Interpolation
 

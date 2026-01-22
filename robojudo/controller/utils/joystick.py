@@ -23,13 +23,22 @@ class JoystickThread(Thread):
 
         self.running = True
 
-    # fmt: off
-    def _init_config(self):
+    def _default_xbox_like_config(self):
+        # Default SDL mapping used across many controllers (and historically used by this project).
+        # Names are "Xbox-like" (A/B/X/Y, LB/RB...) and are also supported as trigger aliases.
         config = {
             "button_map": {
-                0: "A", 1: "B", 2: "X", 3: "Y",
-                4: "LB", 5: "RB", 6: "Back", 7: "Start",
-                8: "Xbox", 9: "L", 10: "R",
+                0: "A",
+                1: "B",
+                2: "X",
+                3: "Y",
+                4: "LB",
+                5: "RB",
+                6: "Back",
+                7: "Start",
+                8: "Xbox",
+                9: "L",
+                10: "R",
             },
             "axis_config": {
                 "axis_map": {
@@ -38,11 +47,11 @@ class JoystickThread(Thread):
                     "RightX": 3,
                     "RightY": 4,
                     "LT": 2,
-                    "RT": 5
+                    "RT": 5,
                 },
                 "axis_range": {
                     "LT": [0, 1],
-                    "RT": [0, 1]
+                    "RT": [0, 1],
                 },
                 "invert": ["LeftY", "RightY"],
             },
@@ -53,24 +62,77 @@ class JoystickThread(Thread):
                     "Right": (0, 1),
                     "Down": (1, -1),
                     "Left": (0, -1),
-                }
-
-            }
+                },
+            },
         }
 
-        # if windows
-        if os.name == 'nt':  # Windows
-            config["button_map"].update({
-                8: "L", 9: "R",
-            })
+        # Windows sometimes reports different layouts for the same physical devices.
+        if os.name == "nt":  # Windows
+            config["button_map"].update(
+                {
+                    8: "L",
+                    9: "R",
+                }
+            )
             del config["button_map"][10]
-            config["axis_config"]["axis_map"].update({
+            config["axis_config"]["axis_map"].update(
+                {
                 "RightX": 2,
                 "RightY": 3,
                 "LT": 4,
-            })
+                }
+            )
         return config
-    # fmt: on
+
+    def _dualsense_ps5_config(self):
+        # DualSense (PS5) mapping observed commonly under SDL/pygame on Linux.
+        # We name buttons using PS5 physical semantics to match user expectations:
+        #   ×/○/□/△, L1/R1/L2/R2, Share/Options, PS, L3/R3.
+        return {
+            "button_map": {
+                0: "×",
+                1: "○",
+                2: "△",
+                3: "□",
+                4: "L1",
+                5: "R1",
+                6: "L2",
+                7: "R2",
+                8: "Share",
+                9: "Options",
+                10: "PS",
+                11: "L3",
+                12: "R3",
+            },
+            "axis_config": {
+                "axis_map": {
+                    "LeftX": 0,
+                    "LeftY": 1,
+                    "L2": 2,
+                    "RightX": 3,
+                    "RightY": 4,
+                    "R2": 5,
+                },
+                "axis_range": {
+                    "L2": [0, 1],
+                    "R2": [0, 1],
+                },
+                "invert": ["LeftY", "RightY"],
+            },
+            "dpad_config": {
+                "as_button_event": True,
+                "dpad_map": {
+                    "Up": (1, 1),
+                    "Right": (0, 1),
+                    "Down": (1, -1),
+                    "Left": (0, -1),
+                },
+            },
+        }
+
+    def _init_config(self):
+        # Use a conservative default. We can switch profiles once we know the joystick name.
+        return self._default_xbox_like_config()
 
     @staticmethod
     def normalize_axis(axis_range, name, value):
@@ -101,6 +163,11 @@ class JoystickThread(Thread):
                 Axes: {joystick.get_numaxes()}, \
                 Hats: {joystick.get_numhats()}"
         )
+
+        # Select a better mapping profile once we know the controller.
+        if ("dualsense" in name) or ("ps5" in name):
+            logger.info("[Joystick] Using DualSense(PS5) button naming profile (×/○/□/△, L1/R1...).")
+            self.config = self._dualsense_ps5_config()
 
         button_map = self.config.get("button_map", {})
         axis_config = self.config.get("axis_config", {})

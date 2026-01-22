@@ -64,6 +64,14 @@ class RlLocoMimicPipelineCfg(PipelineCfg):
     mimic_policies: list[PolicyCfg | Any] = []
     """MotionMimic policies, can be switched to"""
 
+    # ===== Warmup auto-switch =====
+    warmup_steps: int = 0
+    """If >0, auto switch after this many steps."""
+    warmup_to_mimic: bool = False
+    """If True, auto switch to mimic after warmup_steps."""
+    warmup_mimic_idx: int = 0
+    """Which mimic policy index to switch to after warmup."""
+
     # ===== Upper body override Config =====
     upper_dof_num: int = 0
     upper_dof_pos_default: list[float] | None = []

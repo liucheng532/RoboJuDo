@@ -245,6 +245,73 @@ class BeyondMimicPolicyCfg(PolicyCfg):
         return self
 
 
+
+
+
+class MotionTrackingPolicyCfg(PolicyCfg):
+    """
+    MotionTracking policy (RoboMimicDeploy_G1/montion_tracking):
+    - ONNX takes obs(154) + time_step
+    - Motion npz provides joint_pos/joint_vel/body_pos_w/body_quat_w
+    """
+
+    policy_type: str = "MotionTrackingPolicy"
+    disable_autoload: bool = True
+
+    policy_name: str
+    motion_name: str
+
+    @property
+    def policy_file(self) -> str:
+        policy_file = ASSETS_DIR / f"models/{self.robot}/motion_tracking/{self.policy_name}.onnx"
+        return policy_file.as_posix()
+
+    @property
+    def motion_file(self) -> str:
+        motion_file = ASSETS_DIR / f"motions/{self.robot}/motion_tracking/{self.motion_name}.npz"
+        return motion_file.as_posix()
+
+    # ======= MotionTracking configuration (ported from Motion.yaml) =======
+    kps: list[float]
+    kds: list[float]
+    default_angles: list[float]
+    default_angles_seq: list[float]
+    action_scale_seq: list[float]
+    num_actions: int
+    num_obs: int
+    motion_length: float = 10.0
+
+
+class LocoModePolicyCfg(PolicyCfg):
+    policy_type: str = "LocoModePolicy"
+    disable_autoload: bool = True
+
+    policy_name: str = "policy_29dof"
+
+    @property
+    def policy_file(self) -> str:
+        policy_file = ASSETS_DIR / f"models/{self.robot}/locomode/{self.policy_name}.pt"
+        return policy_file.as_posix()
+
+    # LocoMode config (ported from RoboMimicDeploy_G1)
+    kps: list[float]
+    kds: list[float]
+    default_angles: list[float]
+    joint2motor_idx: list[int]
+    tau_limit: list[float]
+    num_actions: int
+    num_obs: int
+    ang_vel_scale: float
+    dof_pos_scale: float
+    dof_vel_scale: float
+    action_scale: float
+    cmd_scale: list[float]
+    cmd_init: list[float]
+    cmd_range: dict[str, list[float]]
+    cmd_deadzone: float = 0.05
+    cmd_signs: list[float] = [1.0, -1.0, -1.0]
+
+
 class AsapPolicyCfg(PolicyCfg):
     policy_type: str = "AsapPolicy"
     disable_autoload: bool = True
