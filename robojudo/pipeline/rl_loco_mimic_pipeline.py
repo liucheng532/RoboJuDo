@@ -236,19 +236,6 @@ class RlLocoMimicPipeline(RlMultiPolicyPipeline):
                         self.env.reborn()  # pyright: ignore[reportAttributeAccessIssue]
                 case cmd if cmd.startswith("[POLICY_SWITCH]"):
                     switch_target = cmd.split(",")[1]
-                    # If currently in Loco, try to switch motion inside PromptMimicCtrl (if present).
-                    if self.policy_manager.current_policy_id == self.policy_manager.policy_loco_id:
-                        ctrl_box = self.ctrl_manager.controllers
-                        prompt_ctrl = ctrl_box.get("PromptMimicCtrl", None)
-                        if prompt_ctrl is not None:
-                            inst = prompt_ctrl["inst"]
-                            if switch_target == "NEXT":
-                                inst.toggle_next_motion()
-                            elif switch_target == "LAST":
-                                inst.toggle_prev_motion()
-                            continue  # skip mimic-policy switch
-
-                    # Fallback to mimic policy switch (for other configs).
                     if switch_target == "NEXT":
                         self.policy_manager.toggle_mimic_policy(1)
                     elif switch_target == "LAST":

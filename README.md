@@ -311,23 +311,6 @@ Switch between Unitree Policy and AMO Policy:
 - `R1 + Dpad[Down]` switch to Unitree Policy
 - `R1 + Dpad[Up]` switch to AMO Policy
 
-### PromptMimic (single ONNX + switchable motions)
-Use the prompt-mimic loco/mimic pipeline (keyboard only):
-
-```bash
-python scripts/run_pipeline.py -c g1_locomimic_promptmimic
-```
-
-Keyboard triggers:
-- `]` switch to LocoMotion
-- `[` switch to PromptMimic
-- `;` select next prompt motion (while in Loco)
-- `'` select prev prompt motion (while in Loco)
-
-Resources:
-- Model: `assets/models/g1/promptmimic/latest.onnx`
-- Motions: `assets/motions/g1/promptmimic/robot_demo*.npz`
-
 ### Loco-Mimic Policy Switch with Interpolation
 
 For deploying **Motion Mimic Policies** with **Locomotion** as backup, we built [LocoMimicPipeline](robojudo/pipeline/rl_loco_mimic_pipeline.py) for multi-policy switching with interpolation, 

@@ -161,25 +161,6 @@ class BeyondMimicCtrlCfg(CtrlCfg):
     motion_cfg: MotionCommandCfg
 
 
-class PromptMimicCtrlCfg(BeyondMimicCtrlCfg):
-    """
-    Motion playback controller for PromptMimic:
-    - Supports multiple motion names and toggling among them.
-    - Shares the same MotionCommandCfg/body indexing semantics as BeyondMimicCtrl.
-    """
-
-    ctrl_type: str = "PromptMimicCtrl"
-
-    # Keep a placeholder to satisfy base class; not used for loading (we use motion_names list).
-    motion_name: str = ""
-    motion_names: list[str] = []
-    motion_idx: int = 0
-
-    def motion_path(self, motion_name: str) -> str:
-        motion_path = ASSETS_DIR / f"motions/{self.robot}/promptmimic/{motion_name}.npz"
-        return motion_path.as_posix()
-
-
 class TwistRedisCtrlCfg(CtrlCfg):
     ctrl_type: str = "TwistRedisCtrl"
 

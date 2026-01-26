@@ -11,7 +11,6 @@ from robojudo.pipeline.pipeline_cfgs import (
 )
 
 from .ctrl.g1_beyondmimic_ctrl_cfg import G1BeyondmimicCtrlCfg  # noqa: F401
-from .ctrl.g1_promptmimic_ctrl_cfg import G1PromptMimicCtrlCfg  # noqa: F401
 from .ctrl.g1_motion_ctrl_cfg import (  # noqa: F401
     G1MotionCtrlCfg,
     G1MotionH2HCtrlCfg,
@@ -27,7 +26,6 @@ from .policy.g1_amo_policy_cfg import G1AmoPolicyCfg  # noqa: F401
 from .policy.g1_asap_policy_cfg import G1AsapLocoPolicyCfg, G1AsapPolicyCfg  # noqa: F401
 from .policy.g1_beyondmimic_policy_cfg import G1BeyondMimicPolicyCfg  # noqa: F401
 from .policy.g1_locomode_policy_cfg import G1LocoModePolicyCfg  # noqa: F401
-from .policy.g1_promptmimic_policy_cfg import G1PromptMimicPolicyCfg  # noqa: F401
 from .policy.g1_motion_tracking_policy_cfg import G1MotionTrackingPolicyCfg  # noqa: F401
 from .policy.g1_h2h_policy_cfg import G1H2HPolicyCfg  # noqa: F401
 from .policy.g1_kungfubot_policy_cfg import G1KungfuBotGeneralPolicyCfg, G1KungfuBotPolicyCfg  # noqa: F401
@@ -129,38 +127,6 @@ class g1_locomode_beyondmimic(G1RlLocoMimicPipelineCfg):
     warmup_steps: int = 100
     warmup_to_mimic: bool = True
     warmup_mimic_idx: int = 0
-
-
-@cfg_registry.register
-class g1_locomimic_promptmimic(G1RlLocoMimicPipelineCfg):
-    """
-    Loco + PromptMimic:
-    - Single ONNX (latest.onnx)
-    - Motion commands from PromptMimicCtrl with switchable npz motions
-    - Keyboard only: [ ] ; '
-    """
-
-    robot: str = "g1"
-    env: G1MujocoEnvCfg = G1MujocoEnvCfg()
-    ctrl: list[KeyboardCtrlCfg | JoystickCtrlCfg] = [
-        KeyboardCtrlCfg(
-            triggers={
-                "i": "[SIM_REBORN]",
-                "o": "[SHUTDOWN]",
-                "]": "[POLICY_LOCO]",
-                "[": "[POLICY_MIMIC]",
-                ";": "[POLICY_SWITCH],NEXT",
-                "'": "[POLICY_SWITCH],LAST",
-            }
-        ),
-        G1PromptMimicCtrlCfg(),
-    ]
-
-    loco_policy: G1AmoPolicyCfg = G1AmoPolicyCfg()
-
-    mimic_policies: list[G1PromptMimicPolicyCfg] = [
-        G1PromptMimicPolicyCfg(),
-    ]
 
 
 @cfg_registry.register

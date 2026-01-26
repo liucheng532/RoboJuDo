@@ -12,6 +12,8 @@
 在项目根目录执行：
 ```
 python scripts/run_pipeline.py -c g1_locomode_beyondmimic
+
+python scripts/run_pipeline.py -c g1_locomode_beyondmimic_real
 ```
 
 ## 策略结构（当前实现）
@@ -83,4 +85,13 @@ Xbox：
 - 左摇杆前后：前进/后退
 - 左摇杆左右：侧移
 - 右摇杆左右：转向
+
+unitree 遥控器操作逻辑：
+select是从mimic切换到amo；
+start是从amo切换mimic
+
+R1是在amo里，切换mimicpolicy，+1
+L1是在amo里，切换mimicpolicy，-1
+
+
 
