@@ -132,3 +132,7 @@ assets/motions
 logs
 MUJOCO_LOG.TXT
 assets/resources
+
+# Third-party submodules
+MimicKit/
+IsaacLab/

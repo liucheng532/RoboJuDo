@@ -245,6 +245,38 @@ class BeyondMimicPolicyCfg(PolicyCfg):
         return self
 
 
+class MimicKitPolicyCfg(PolicyCfg):
+    policy_type: str = "MimicKitPolicy"
+    disable_autoload: bool = True
+
+    policy_name: str = "g1_mimickit"
+    motion_name: str = "hkf_mimic"
+
+    env_config_path: str
+    agent_config_path: str
+
+    model_pt_file: str | None = None
+    model_npz_file: str | None = None
+    motion_file: str | None = None
+    char_file: str | None = None
+
+    obs_clip: float = 10.0
+
+    global_obs: bool | None = None
+    root_height_obs: bool | None = None
+    enable_phase_obs: bool | None = None
+    enable_tar_obs: bool | None = None
+    num_phase_encoding: int | None = None
+    tar_obs_steps: list[int] | None = None
+    key_bodies: list[str] | None = None
+
+    zero_center_action: bool | None = None
+
+    # ===== debug =====
+    debug_dump_once: bool = False
+    debug_dump_path: str = ""
+
+
 
 
 
