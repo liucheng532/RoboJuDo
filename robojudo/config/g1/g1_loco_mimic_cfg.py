@@ -126,6 +126,7 @@ class g1_locomode_beyondmimic(G1RlLocoMimicPipelineCfg):
         G1MotionTrackingPolicyCfg(policy_name="demo6", motion_name="robot_demo6"),
         G1MotionTrackingPolicyCfg(policy_name="demo7", motion_name="robot_demo7"),
         G1MotionTrackingPolicyCfg(policy_name="demo8", motion_name="robot_demo8"),
+        G1MotionTrackingPolicyCfg(policy_name="newyear1", motion_name="newyear1"),
     ]
 
     # 2 seconds warmup at 50Hz, then switch to mimic index 0 (LocoMode).

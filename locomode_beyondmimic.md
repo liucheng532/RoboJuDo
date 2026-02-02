@@ -93,5 +93,37 @@ start是从amo切换mimic
 R1是在amo里，切换mimicpolicy，+1
 L1是在amo里，切换mimicpolicy，-1
 
+0: LocoModePolicy
+1: Dance_wose
+2: Violin
+3: Waltz
+4: demo2
+5: demo4
+6: demo5
+7: demo6
+8: demo7
+9: demo8
+10: newyear1 (新增)
 
+## 真机部署 - 网卡配置
+
+在真机上运行时，如果提示网口名称错误，需要设置正确的网卡名称。使用以下命令查看网卡名称：
+
+```bash
+ip a
+# 或者
+ip link show
+```
+
+找到连接到机器人的网卡名称（通常是 `eth0`、`eno1`、`enp13s0` 等），然后在配置文件中修改 `net_if` 参数：
+
+配置文件位置：`robojudo/config/g1/g1_loco_mimic_cfg.py` 中的 `g1_locomode_beyondmimic_real` 类
+
+```python
+env: G1RealEnvCfg = G1RealEnvCfg(
+    unitree=G1UnitreeCfg(
+        net_if="eth0",  # 修改为你的网卡名称
+    ),
+)
+```
 
