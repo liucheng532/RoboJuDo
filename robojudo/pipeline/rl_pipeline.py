@@ -107,7 +107,7 @@ class RlPipeline(Pipeline):
             return
         gravity_ori = get_gravity_orientation(self.env.base_quat)
         angle = np.arccos(np.clip(-gravity_ori[2], -1.0, 1.0))
-        if abs(angle) > 1.0:  # more than ~57 degrees
+        if abs(angle) > 1.2:  # more than ~57 degrees
             logger.error("Robot fallen! Shutdown for safety.")
             if hasattr(self.env, "reborn"):
                 self.env.reborn()  # pyright: ignore[reportAttributeAccessIssue]
