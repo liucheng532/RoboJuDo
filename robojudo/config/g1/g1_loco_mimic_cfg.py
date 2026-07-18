@@ -28,6 +28,7 @@ from .policy.g1_beyondmimic_policy_cfg import G1BeyondMimicPolicyCfg  # noqa: F4
 from .policy.g1_mimickit_policy_cfg import G1MimicKitPolicyCfg  # noqa: F401
 from .policy.g1_locomode_policy_cfg import G1LocoModePolicyCfg  # noqa: F401
 from .policy.g1_motion_tracking_policy_cfg import G1MotionTrackingPolicyCfg  # noqa: F401
+from .policy.g1_recoveryloco_policy_cfg import G1RecoveryLocoPolicyCfg  # noqa: F401
 from .policy.g1_h2h_policy_cfg import G1H2HPolicyCfg  # noqa: F401
 from .policy.g1_kungfubot_policy_cfg import G1KungfuBotGeneralPolicyCfg, G1KungfuBotPolicyCfg  # noqa: F401
 from .policy.g1_smooth_policy_cfg import G1SmoothPolicyCfg  # noqa: F401
@@ -133,6 +134,25 @@ class g1_locomode_beyondmimic(G1RlLocoMimicPipelineCfg):
     warmup_steps: int = 100
     warmup_to_mimic: bool = True
     warmup_mimic_idx: int = 0
+
+
+@cfg_registry.register
+class g1_recoveryloco_beyondmimic(g1_locomode_beyondmimic):
+    """AMP recovery locomotion + BeyondMimic, Sim2Sim."""
+
+    mimic_policies: list[G1RecoveryLocoPolicyCfg | G1BeyondMimicPolicyCfg | G1MotionTrackingPolicyCfg] = [
+        G1RecoveryLocoPolicyCfg(),
+        G1BeyondMimicPolicyCfg(policy_name="Dance_wose", without_state_estimator=True),
+        G1BeyondMimicPolicyCfg(policy_name="Violin", without_state_estimator=False, max_timestep=500),
+        G1BeyondMimicPolicyCfg(policy_name="Waltz", without_state_estimator=False, max_timestep=850),
+        G1MotionTrackingPolicyCfg(policy_name="demo2", motion_name="robot_demo2"),
+        G1MotionTrackingPolicyCfg(policy_name="demo4", motion_name="robot_demo4"),
+        G1MotionTrackingPolicyCfg(policy_name="demo5", motion_name="robot_demo5"),
+        G1MotionTrackingPolicyCfg(policy_name="demo6", motion_name="robot_demo6"),
+        G1MotionTrackingPolicyCfg(policy_name="demo7", motion_name="robot_demo7"),
+        G1MotionTrackingPolicyCfg(policy_name="demo8", motion_name="robot_demo8"),
+        G1MotionTrackingPolicyCfg(policy_name="newyear1", motion_name="newyear1"),
+    ]
 
 
 @cfg_registry.register
@@ -290,6 +310,37 @@ class g1_locomode_beyondmimic_real(g1_locomode_beyondmimic):
     ]
 
     do_safety_check: bool = True  # enable safety check for real robot
+
+
+@cfg_registry.register
+class g1_recoveryloco_beyondmimic_real(g1_recoveryloco_beyondmimic):
+    """AMP recovery locomotion + BeyondMimic, Sim2Real.
+
+    The generic tilt shutdown must remain disabled so the recovery policy can
+    operate while the robot is fallen. The Unitree controller's A-button
+    emergency shutdown remains available.
+    """
+
+    env: G1RealEnvCfg = G1RealEnvCfg(
+        unitree=G1UnitreeCfg(
+            net_if="eth0",  # note: change to your network interface
+        ),
+    )
+    ctrl: list[UnitreeCtrlCfg] = [
+        UnitreeCtrlCfg(
+            combination_init_buttons=[],
+            triggers={
+                "A": "[SHUTDOWN]",
+                "Select": "[POLICY_LOCO]",
+                "Start": "[POLICY_MIMIC]",
+                "R1": "[POLICY_SWITCH],NEXT",
+                "L1": "[POLICY_SWITCH],LAST",
+            },
+        ),
+    ]
+
+    # AMP_mjlab uses safe_projgravity_threshold=2.6 so fallen states can recover.
+    do_safety_check: bool = False
 
 
 @cfg_registry.register

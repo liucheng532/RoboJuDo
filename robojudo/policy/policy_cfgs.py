@@ -53,6 +53,61 @@ class PolicyCfg(Config):
         return self
 
 
+class RecoveryLocoPolicyCfg(PolicyCfg):
+    """MJLab AMP locomotion/recovery policy exported as ONNX."""
+
+    policy_type: str = "RecoveryLocoPolicy"
+    disable_autoload: bool = True
+
+    policy_name: str = "Unitree-G1-AMP-Flat_model_30000"
+
+    @property
+    def policy_file(self) -> str:
+        policy_file = ASSETS_DIR / f"models/{self.robot}/recoveryloco/{self.policy_name}.onnx"
+        return policy_file.as_posix()
+
+    observation_size: int = 384
+    frame_observation_size: int = 96
+    output_size: int = 29
+
+    history_length: int = 4
+    obs_clip: float = 100.0
+    action_clip: float | None = 100.0
+    action_scale: float = 1.0
+    action_scales: list[float]
+
+    # [min, neutral, max] for vx, vy, wz. These defaults match
+    # AMP_mjlab/deployment/config/mjamp.json in low-speed mode.
+    command_ranges: list[list[float]] = [
+        [-0.8, 0.0, 1.0],
+        [-1.0, 0.0, 1.0],
+        [-3.14, 0.0, 3.14],
+    ]
+    command_deadzone: float = 0.2
+    command_smoothing: float = 0.0
+    keyboard_value: float = 1.0
+
+    @property
+    def history_obs_size(self) -> int:
+        return self.frame_observation_size
+
+    @model_validator(mode="after")
+    def check_recovery_loco_policy(self):
+        if self.observation_size != self.frame_observation_size * self.history_length:
+            raise ValueError("observation_size must equal frame_observation_size * history_length")
+        if self.output_size != self.action_dof.num_dofs:
+            raise ValueError("output_size must match action_dof.num_dofs")
+        if len(self.action_scales) != self.action_dof.num_dofs:
+            raise ValueError("action_scales length must match action_dof.num_dofs")
+        if len(self.command_ranges) != 3 or any(len(r) != 3 for r in self.command_ranges):
+            raise ValueError("command_ranges must be a 3x3 list: [min, neutral, max] for vx/vy/wz")
+        if not 0.0 <= self.command_deadzone < 1.0:
+            raise ValueError("command_deadzone must be in [0, 1)")
+        if not 0.0 <= self.command_smoothing < 1.0:
+            raise ValueError("command_smoothing must be in [0, 1)")
+        return self
+
+
 class UnitreePolicyCfg(PolicyCfg):
     class ObsScalesCfg(Config):
         dof_pos: float = 1.0
